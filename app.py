@@ -1,18 +1,16 @@
 import os
-import tensorflow as tf
 import numpy as np
-#from tensorflow.keras.preprocessing import image
-from PIL import Image
 import cv2
+from PIL import Image
+from flask import Flask, request, render_template, send_from_directory
 from keras.models import load_model
-from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 
+# Initialize Flask app
+app = Flask(__name__, template_folder='.')  # Ensures HTML files are found in the same directory
 
-app = Flask(__name__)
-
-
-model =load_model('BrainTumor10Epochs.h5')
+# Load the trained model
+model = load_model('BrainTumor10Epochs.h5')
 print('Model loaded. Check http://127.0.0.1:5000/')
 
 
@@ -32,9 +30,22 @@ def getResult(img):
     return result
 
 
-@app.route('/', methods=['GET'])
+# Serve static files (CSS, JS, Images) from the same directory
+@app.route('/<path:filename>')
+def serve_static_files(filename):
+    return send_from_directory('.', filename)
+
+
+# Main index route
+@app.route('/')
 def index():
     return render_template('index.html')
+
+
+# Import page route
+@app.route('/import')
+def import_page():
+    return render_template('import.html')
 
 
 @app.route('/predict', methods=['GET', 'POST'])
